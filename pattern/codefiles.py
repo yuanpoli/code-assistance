@@ -22,12 +22,12 @@ def check_part(part,keyword = 'free'):
 
 
 def write_f(fpath, code):
-    f = open(fpath,"w")
+    f = open(fpath,"w", encoding="utf8")
     f.write(code)
     f.close()
     del f
 def read_f(fpath):
-    f = open(fpath)
+    f = open(fpath, encoding="utf8")
     #print(fpath)
     code = f.read()
     f.close()
