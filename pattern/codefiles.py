@@ -10,9 +10,7 @@ import time
 import zipfile as zpf
 # from pattern.c_part_log import CP_LOG_PARTS as LOG_PARTS
 from difflib import ndiff
-#from pattern.c_parts import *
-#from pattern.c_parts import CLEAN_COMM_DEBUG_LOGS as LOG_PARTS
-STRUCT_PATT = "(typedef\s+struct\s*(?:\w+\s*)?\{[^\}]+\}\s*(\w+)\s*\;)"
+from c_syntax import CPP_FILE_EXT,C_SRC_FILE_EXT, CPP_SRC_FILE_EXT, INC_LINE_PATT,STRUCT_PATT
 
 def check_part(part,keyword = 'free'):
     for k in part.groupdict():
@@ -59,10 +57,7 @@ def foldersof(src):
     elif type(src) in [type([]), type(tuple([])), type({})]:
         for path in src:
             foldersof(path)
-PARTMAP={
-    'caseimpl':re.compile('case\s+\w+\:(?:.(?!break\;))+.break\;', re.DOTALL),
-    'funcimpl':r"%s\s+%s\s*\([^\(\)\{\}]*\)\s*\{(?:[^\}]|(?<!\n)\})+\n\}"
-}
+
 def rangeof(code, partkey, PATT_PARTS):
     parts = [(part.span(), part) for part in re.finditer(PATT_PARTS, code)
              if partkey == None 
@@ -88,8 +83,7 @@ def partsof(src, P=STRUCT_PATT, FTYPE="\.h$"):
             CODE = read_f(src)
             for s,n in re.findall(P, CODE):
                 yield n,s
-            
-def filesof(src, match = "[.]c$|[.]h$", exclude = None):
+def filesof(src, match = C_SRC_FILE_EXT, exclude = None):
     if type(src) == type('') and os.path.exists(src):
         for rd, dl, fl in os.walk(src):
             for fpath in fl:
@@ -99,8 +93,8 @@ def filesof(src, match = "[.]c$|[.]h$", exclude = None):
     elif type(src) in [type([]), type(tuple([])), type({})]:
         for path in src:
             filesof(path)
-            
-def pairsof(base_srcpath, change_srcpath, SRC_EXT_PATT = "\.h$|\.c$|\.cpp$"):
+
+def pairsof(base_srcpath, change_srcpath, SRC_EXT_PATT = CPP_SRC_FILE_EXT):
     for fa in filesof(base_srcpath, SRC_EXT_PATT):
         for fb in filesof(change_srcpath, SRC_EXT_PATT):
             if os.path.relpath(fa, base_srcpath) == os.path.relpath(fb, change_srcpath):
@@ -188,20 +182,21 @@ def findofname(cmpPath, paths):
                 yield p
                 
 def findincs(code):
-    for relpath in  re.finditer('\#include\s+[\<\"]([^\>\"]+)[\>\"]', code):
+    for relpath in  re.finditer(INC_LINE_PATT, code):
         yield relpath
         
 def c_files(path):
-    for fpath in filesof(path, "[.]c$|[.]h$"):
+    for fpath in filesof(path, C_SRC_FILE_EXT):
         yield fpath
 def cpp_files(path):
-    for fpath in filesof(path, "[.]cpp$"):
+    for fpath in filesof(path, CPP_FILE_EXT):
         yield fpath
 
 def inc_files(path):
     for rd, dl, fl in os.walk(path):
         for fpath in fl:
-            if re.search("[.]h$", fpath):
+            C_SRC_HEADER_EXT = "[.]h$"
+            if re.search(C_SRC_HEADER_EXT, fpath):
                 yield os.path.join(rd,fpath)
 
                 

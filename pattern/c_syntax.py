@@ -3,7 +3,17 @@ from syntax import *
 
 
 # print """\n""".join('\"'+p+'\": '+p+',' for p in re.findall('(C\_\w+)\s*\=\s*',  '''
+CPP_SRC_FILE_EXT = "\.h$|\.c$|\.cpp$"
+CPP_FILE_EXT = "[.]cpp$"
+C_SRC_FILE_EXT = "[.]c$|[.]h$"
 
+STRUCT_PATT = "(typedef\s+struct\s*(?:\w+\s*)?\{[^\}]+\}\s*(\w+)\s*\;)"
+INC_LINE_PATT = '\#include\s+[\<\"]([^\>\"]+)[\>\"]'
+
+PARTMAP={
+    'caseimpl':re.compile('case\s+\w+\:(?:.(?!break\;))+.break\;', re.DOTALL),
+    'funcimpl':r"%s\s+%s\s*\([^\(\)\{\}]*\)\s*\{(?:[^\}]|(?<!\n)\})+\n\}"
+}
 C_SYNTAX_MAP = dict(
             C_keywords = """(?<=\W)(?:struct|void|int|enum|const|static|unsigned|if|while|for|case|switch|__declspec)(?=\W)""",
             C_commentSL = """(?P<commentSL>\/\/.*\n)""",
